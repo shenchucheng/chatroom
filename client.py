@@ -86,17 +86,17 @@ def test():
 Thread(target=test).start()
 while 1:
     try:
-        inp = input('1: 回车返回广场；2：.exit退出；3：任意内容发送')
+        inp = input('1：.exit + 回车 退出；2：其他任意内容回车发送')
         if inp == '':
             continue
-        elif not inp:
-            break
+        elif inp == '.exit' :
+            sys.exit('bye')
         else:
+            client.createRoom
             client.sendRMMsg(inp)
     except KeyboardInterrupt:
         break
         
-         
 
 # if __name__ == '__main__':
 #     try:
