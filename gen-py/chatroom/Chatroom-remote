@@ -27,7 +27,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  bool sendMsg(Msg msg)')
     print('  bool sendRMMsg(RMMsg msg)')
     print('  UniMsg getMsg(iUserId userId)')
-    print('  Room createRoom(string roomName,  members, RoomInfo roomInfo)')
+    print('  Room createRoom(string roomName, iUserId roomOwer,  members, RoomInfo roomInfo)')
     print('  bool dismissRoom(iRoomId roomId, iUserId userId)')
     print('  bool joinRoom(iRoomId roomId,  members, string msg)')
     print('  bool processRoomRequest(iRoomId chatroomId, iUserId userId, iUserId memberId)')
@@ -137,10 +137,10 @@ elif cmd == 'getMsg':
     pp.pprint(client.getMsg(eval(args[0]),))
 
 elif cmd == 'createRoom':
-    if len(args) != 3:
-        print('createRoom requires 3 args')
+    if len(args) != 4:
+        print('createRoom requires 4 args')
         sys.exit(1)
-    pp.pprint(client.createRoom(args[0], eval(args[1]), eval(args[2]),))
+    pp.pprint(client.createRoom(args[0], eval(args[1]), eval(args[2]), eval(args[3]),))
 
 elif cmd == 'dismissRoom':
     if len(args) != 2:

@@ -77,8 +77,9 @@ service Chatroom extends user.UserService {
     // 建立群聊
     Room createRoom(
         1:string roomName,
-        2:optional list<iUserId> members,
-        3:optional RoomInfo roomInfo
+        2:iUserId roomOwer,
+        3:optional set<iUserId> members,
+        4:optional RoomInfo roomInfo
     ) throws (1:ChatroomOperationError error),
 
     // 解散群聊

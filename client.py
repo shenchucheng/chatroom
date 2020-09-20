@@ -8,7 +8,9 @@
 import sys
 sys.path.append('gen-py')
 
-import socket
+import socket, time
+
+from threading import Thread
 
 from chatroom.ttypes import ChatroomOperationError, RMMsg
 from chatroom.Chatroom import Client
@@ -25,7 +27,7 @@ from thrift.protocol import TBinaryProtocol
 
 from server import timestamp
 
-# Client.sendRMMsg
+Client.getMsg
 class ChatroomClient(Client):
     def __init__(self, iport, oport=None):
         super().__init__(iport, oprot=oport)
@@ -36,7 +38,7 @@ class ChatroomClient(Client):
         self.__user = super().getUser(ip=ip)
         return self.__user
 
-    def sendRMMsg(self, content, chatroomId):
+    def sendRMMsg(self, content, chatroomId=2147483647):
         msg = RMMsg(
             content = content,
             timestamp = timestamp(),
@@ -45,8 +47,12 @@ class ChatroomClient(Client):
         )
         return super().sendRMMsg(msg)
 
+    def getMsg(self):
+        return super().getMsg(self.__user.userId)
 
 
+def timeFormat(timestamp):
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))
 
 # Make socket
 transport = TSocket.TSocket('localhost', 9090)
@@ -62,9 +68,35 @@ client = ChatroomClient(protocol)
 ip = socket.gethostbyname(socket.gethostname())
 # Connect!
 transport.open()
+client.getUser(ip)
 # Close!
 # transport.close()
 
+def test():
+    while 1:
+        msgs = client.getMsg()
+        if not msgs.room:
+            time.sleep(1)
+            # print(msgs)
+            continue
+        for i in msgs.room:
+            print('User', i.userId,  timeFormat(i.timestamp))
+            print(i.content)
+        
+Thread(target=test).start()
+while 1:
+    try:
+        inp = input('1: 回车返回广场；2：.exit退出；3：任意内容发送')
+        if inp == '':
+            continue
+        elif not inp:
+            break
+        else:
+            client.sendRMMsg(inp)
+    except KeyboardInterrupt:
+        break
+        
+         
 
 # if __name__ == '__main__':
 #     try:

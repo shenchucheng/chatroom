@@ -12,6 +12,7 @@ sys.path.append('gen-py')
 import logging
 
 from time import time
+from copy import copy
 from typing import List
 
 from chatroom import Chatroom
@@ -55,7 +56,7 @@ class ChatroomHandler(Chatroom.Iface):
         self.globalRoom = Room(
             roomId = self.nextRoomId,
             roomName =  '世界广场',
-            roomOwer = self.superUser,
+            roomOwer = self.superUser.userId,
             members = set(),
             roomInfo = RoomInfo(
                 creatTime = timestamp(),
@@ -65,15 +66,7 @@ class ChatroomHandler(Chatroom.Iface):
         )
         self.globalRoom.members.add(self.superUser.userId)
         self.__rooms[self.globalRoom.roomId] = self.globalRoom
-        
-        welcomeMsg = RMMsg(
-            content = '欢迎来到世界广场！',
-            timestamp = timestamp(),
-            chatroomId = self.globalRoom.roomId,
-            userId = self.superUser.userId,
-            msgId = self.nextRMMsgId,
-        )
-        self.__saveRMMsg(welcomeMsg)
+        self.__saveRMMsg(self.genWelcomeMsg(self.globalRoom))
 
     @property
     def nextUserId(self) -> int:
@@ -99,6 +92,15 @@ class ChatroomHandler(Chatroom.Iface):
         logger.debug('Chatroom msg lastid is {}'.format(self.__lastRMMsgId))
         return self.__lastRMMsgId
 
+    def genWelcomeMsg(self, room: Room) -> RMMsg:
+        return RMMsg(
+            content = '欢迎来到{}！'.format(room.roomName),
+            timestamp = timestamp(),
+            chatroomId = room.roomId,
+            userId = room.roomOwer,
+            msgId = self.nextRMMsgId,
+        )
+
     def __saveUser(self, user: User):
         """持久化保存User
 
@@ -121,7 +123,8 @@ class ChatroomHandler(Chatroom.Iface):
             self.__roomLastMsgTime[msg.chatroomId] = msg.saveTime
             logger.debug('Chatroom {} recieve a msg {}'.format(roomId, msg.content))
             return True
-        logger.warn('Add mesage error')
+        logger.warning('Add mesage error')
+        print(msg)
         return False
             
     def __querryUser(self, userId: int) -> User:
@@ -132,7 +135,11 @@ class ChatroomHandler(Chatroom.Iface):
 
     def __querryUserRooms(self, userId: int) -> List:
         # 待补充 先返回世界广场
-        return [self.globalRoom.roomId]
+        rooms = []
+        for roomId, room in self.__rooms.items():
+            if userId in room.members:
+                rooms.append(roomId)
+        return rooms
     
     def __querryUserMsg(self, userId, t) -> List:
         pass
@@ -170,7 +177,29 @@ class ChatroomHandler(Chatroom.Iface):
                 raise Exception
         self.__userLastRMMsgTime[userId] = ts
         return msg
-        
+    
+    def __saveRoom(self, room):
+        self.__rooms[room.roomId] = room
+        self.__saveRMMsg(self.genWelcomeMsg(room))
+
+    def createRoom(self, roomName, roomOwer, members, roomInfo=None):
+        print(roomName, roomOwer, members, roomInfo)
+        print(members)
+        if not members:
+            members = set()
+        members.add(roomOwer)
+        members.add(self.superUser.userId)
+        roomId = self.nextRoomId
+        room = Room(
+            roomId = roomId,
+            roomName = roomName,
+            members = members,
+            roomOwer = roomOwer,
+            msgs = []
+        )
+        self.__saveRoom(room)
+        return room
+
     def getUser(self, ip:str) -> User:
         userId = self.nextUserId
         userInfo = UserInfo(timestamp(), introduce='ip:{}'.format(ip))
@@ -188,8 +217,7 @@ class ChatroomHandler(Chatroom.Iface):
     
     def getMsg(self, userId) -> UniMsg:
         return self.__querryMsg(userId)
-
-
+    
 
 if __name__ == '__main__':
     handler = ChatroomHandler()
@@ -198,7 +226,7 @@ if __name__ == '__main__':
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
 
     # You could do one of these for a multithreaded server
     # server = TServer.TThreadedServer(

@@ -44,10 +44,11 @@ class Iface(user.UserService.Iface):
         """
         pass
 
-    def createRoom(self, roomName, members, roomInfo):
+    def createRoom(self, roomName, roomOwer, members, roomInfo):
         """
         Parameters:
          - roomName
+         - roomOwer
          - members
          - roomInfo
 
@@ -203,21 +204,23 @@ class Client(user.UserService.Client, Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "getMsg failed: unknown result")
 
-    def createRoom(self, roomName, members, roomInfo):
+    def createRoom(self, roomName, roomOwer, members, roomInfo):
         """
         Parameters:
          - roomName
+         - roomOwer
          - members
          - roomInfo
 
         """
-        self.send_createRoom(roomName, members, roomInfo)
+        self.send_createRoom(roomName, roomOwer, members, roomInfo)
         return self.recv_createRoom()
 
-    def send_createRoom(self, roomName, members, roomInfo):
+    def send_createRoom(self, roomName, roomOwer, members, roomInfo):
         self._oprot.writeMessageBegin('createRoom', TMessageType.CALL, self._seqid)
         args = createRoom_args()
         args.roomName = roomName
+        args.roomOwer = roomOwer
         args.members = members
         args.roomInfo = roomInfo
         args.write(self._oprot)
@@ -535,7 +538,7 @@ class Processor(user.UserService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = createRoom_result()
         try:
-            result.success = self._handler.createRoom(args.roomName, args.members, args.roomInfo)
+            result.success = self._handler.createRoom(args.roomName, args.roomOwer, args.members, args.roomInfo)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -1061,14 +1064,16 @@ class createRoom_args(object):
     """
     Attributes:
      - roomName
+     - roomOwer
      - members
      - roomInfo
 
     """
 
 
-    def __init__(self, roomName=None, members=None, roomInfo=None,):
+    def __init__(self, roomName=None, roomOwer=None, members=None, roomInfo=None,):
         self.roomName = roomName
+        self.roomOwer = roomOwer
         self.members = members
         self.roomInfo = roomInfo
 
@@ -1087,16 +1092,21 @@ class createRoom_args(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
-                if ftype == TType.LIST:
-                    self.members = []
-                    (_etype31, _size28) = iprot.readListBegin()
-                    for _i32 in range(_size28):
-                        _elem33 = iprot.readI32()
-                        self.members.append(_elem33)
-                    iprot.readListEnd()
+                if ftype == TType.I32:
+                    self.roomOwer = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
+                if ftype == TType.SET:
+                    self.members = set()
+                    (_etype31, _size28) = iprot.readSetBegin()
+                    for _i32 in range(_size28):
+                        _elem33 = iprot.readI32()
+                        self.members.add(_elem33)
+                    iprot.readSetEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
                 if ftype == TType.STRUCT:
                     self.roomInfo = RoomInfo()
                     self.roomInfo.read(iprot)
@@ -1116,15 +1126,19 @@ class createRoom_args(object):
             oprot.writeFieldBegin('roomName', TType.STRING, 1)
             oprot.writeString(self.roomName.encode('utf-8') if sys.version_info[0] == 2 else self.roomName)
             oprot.writeFieldEnd()
+        if self.roomOwer is not None:
+            oprot.writeFieldBegin('roomOwer', TType.I32, 2)
+            oprot.writeI32(self.roomOwer)
+            oprot.writeFieldEnd()
         if self.members is not None:
-            oprot.writeFieldBegin('members', TType.LIST, 2)
-            oprot.writeListBegin(TType.I32, len(self.members))
+            oprot.writeFieldBegin('members', TType.SET, 3)
+            oprot.writeSetBegin(TType.I32, len(self.members))
             for iter34 in self.members:
                 oprot.writeI32(iter34)
-            oprot.writeListEnd()
+            oprot.writeSetEnd()
             oprot.writeFieldEnd()
         if self.roomInfo is not None:
-            oprot.writeFieldBegin('roomInfo', TType.STRUCT, 3)
+            oprot.writeFieldBegin('roomInfo', TType.STRUCT, 4)
             self.roomInfo.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -1147,8 +1161,9 @@ all_structs.append(createRoom_args)
 createRoom_args.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'roomName', 'UTF8', None, ),  # 1
-    (2, TType.LIST, 'members', (TType.I32, None, False), None, ),  # 2
-    (3, TType.STRUCT, 'roomInfo', [RoomInfo, None], None, ),  # 3
+    (2, TType.I32, 'roomOwer', None, None, ),  # 2
+    (3, TType.SET, 'members', (TType.I32, None, False), None, ),  # 3
+    (4, TType.STRUCT, 'roomInfo', [RoomInfo, None], None, ),  # 4
 )
 
 
