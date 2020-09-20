@@ -651,11 +651,11 @@ class userRegister_args(object):
             elif fid == 4:
                 if ftype == TType.MAP:
                     self.userInfo = {}
-                    (_ktype10, _vtype11, _size9) = iprot.readMapBegin()
-                    for _i13 in range(_size9):
-                        _key14 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        _val15 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.userInfo[_key14] = _val15
+                    (_ktype1, _vtype2, _size0) = iprot.readMapBegin()
+                    for _i4 in range(_size0):
+                        _key5 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        _val6 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.userInfo[_key5] = _val6
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -684,9 +684,9 @@ class userRegister_args(object):
         if self.userInfo is not None:
             oprot.writeFieldBegin('userInfo', TType.MAP, 4)
             oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.userInfo))
-            for kiter16, viter17 in self.userInfo.items():
-                oprot.writeString(kiter16.encode('utf-8') if sys.version_info[0] == 2 else kiter16)
-                oprot.writeString(viter17.encode('utf-8') if sys.version_info[0] == 2 else viter17)
+            for kiter7, viter8 in self.userInfo.items():
+                oprot.writeString(kiter7.encode('utf-8') if sys.version_info[0] == 2 else kiter7)
+                oprot.writeString(viter8.encode('utf-8') if sys.version_info[0] == 2 else viter8)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -1271,11 +1271,11 @@ class updateUserInfo_args(object):
             elif fid == 3:
                 if ftype == TType.MAP:
                     self.userInfo = {}
-                    (_ktype19, _vtype20, _size18) = iprot.readMapBegin()
-                    for _i22 in range(_size18):
-                        _key23 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        _val24 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.userInfo[_key23] = _val24
+                    (_ktype10, _vtype11, _size9) = iprot.readMapBegin()
+                    for _i13 in range(_size9):
+                        _key14 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        _val15 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.userInfo[_key14] = _val15
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -1300,9 +1300,9 @@ class updateUserInfo_args(object):
         if self.userInfo is not None:
             oprot.writeFieldBegin('userInfo', TType.MAP, 3)
             oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.userInfo))
-            for kiter25, viter26 in self.userInfo.items():
-                oprot.writeString(kiter25.encode('utf-8') if sys.version_info[0] == 2 else kiter25)
-                oprot.writeString(viter26.encode('utf-8') if sys.version_info[0] == 2 else viter26)
+            for kiter16, viter17 in self.userInfo.items():
+                oprot.writeString(kiter16.encode('utf-8') if sys.version_info[0] == 2 else kiter16)
+                oprot.writeString(viter17.encode('utf-8') if sys.version_info[0] == 2 else viter17)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()

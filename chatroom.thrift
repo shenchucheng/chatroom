@@ -23,7 +23,8 @@ struct Msg {
     2:iTime timestamp,
     3:iUserId fromUserId,
     4:iUserId toUserId,
-    5:iMsg msgId
+    5:iMsg msgId,
+    6:iTime saveTime
 }
 
 // 群聊消息
@@ -32,7 +33,8 @@ struct RMMsg {
     2:iTime timestamp,
     3:iUserId userId,
     4:iRoomId chatroomId,
-    5:iRMMsg msgId
+    5:iRMMsg msgId,
+    6:iTime saveTime 
 }
 
 // 轮询返回消息
@@ -45,21 +47,16 @@ struct UniMsg {
 struct Room {
     1:iRoomId roomId,
     2:string roomName,
-    3:list<iUserId> members,
+    3:set<iUserId> members,
     4:iUserId roomOwer,
-    5:optional RoomInfo roomInfo
+    5:optional RoomInfo roomInfo,
+    6:list<RMMsg> msgs
 }
 
 // 群信息
 struct RoomInfo{
     1:iTime creatTime,
     2:string introduce
-}
-
-// 轮询参数
-struct RequestInfo{
-    1:iUserId id,
-    2:iTime lastTimestamp
 }
 
 exception ChatroomOperationError{
@@ -75,7 +72,7 @@ service Chatroom extends user.UserService {
     bool sendRMMsg(1:RMMsg msg),
 
     // 消息轮询 所有消息处理
-    UniMsg getMsg(1:RequestInfo request),
+    UniMsg getMsg(1:iUserId userId),
 
     // 建立群聊
     Room createRoom(
@@ -109,7 +106,7 @@ service Chatroom extends user.UserService {
         2:iUserId userId,
         3:list<iUserId> members,
     ) throws(1:ChatroomOperationError error),
-    
+
     // 退出群聊
     bool leaveRoom(1:iRoomId roomId, 2:iUserId userId),
 }

@@ -8,10 +8,18 @@ namespace perl user
 namespace haxe user
 namespace netstd user
 
+typedef i32 iTime
+
 struct User {
     1: i32 userId,
     2: optional string username,
-    3: optional map<string, string> userInfo
+    3: optional UserInfo userInfo
+}
+
+struct UserInfo {
+    1:iTime creatTime,
+    2:iTime registerTime,
+    3:string introduce
 }
 
 exception UserOperationError {

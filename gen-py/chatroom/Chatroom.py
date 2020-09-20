@@ -36,10 +36,10 @@ class Iface(user.UserService.Iface):
         """
         pass
 
-    def getMsg(self, request):
+    def getMsg(self, userId):
         """
         Parameters:
-         - request
+         - userId
 
         """
         pass
@@ -171,19 +171,19 @@ class Client(user.UserService.Client, Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "sendRMMsg failed: unknown result")
 
-    def getMsg(self, request):
+    def getMsg(self, userId):
         """
         Parameters:
-         - request
+         - userId
 
         """
-        self.send_getMsg(request)
+        self.send_getMsg(userId)
         return self.recv_getMsg()
 
-    def send_getMsg(self, request):
+    def send_getMsg(self, userId):
         self._oprot.writeMessageBegin('getMsg', TMessageType.CALL, self._seqid)
         args = getMsg_args()
-        args.request = request
+        args.userId = userId
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -512,7 +512,7 @@ class Processor(user.UserService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = getMsg_result()
         try:
-            result.success = self._handler.getMsg(args.request)
+            result.success = self._handler.getMsg(args.userId)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -936,13 +936,13 @@ sendRMMsg_result.thrift_spec = (
 class getMsg_args(object):
     """
     Attributes:
-     - request
+     - userId
 
     """
 
 
-    def __init__(self, request=None,):
-        self.request = request
+    def __init__(self, userId=None,):
+        self.userId = userId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -954,9 +954,8 @@ class getMsg_args(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.request = RequestInfo()
-                    self.request.read(iprot)
+                if ftype == TType.I32:
+                    self.userId = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             else:
@@ -969,9 +968,9 @@ class getMsg_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('getMsg_args')
-        if self.request is not None:
-            oprot.writeFieldBegin('request', TType.STRUCT, 1)
-            self.request.write(oprot)
+        if self.userId is not None:
+            oprot.writeFieldBegin('userId', TType.I32, 1)
+            oprot.writeI32(self.userId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -992,7 +991,7 @@ class getMsg_args(object):
 all_structs.append(getMsg_args)
 getMsg_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'request', [RequestInfo, None], None, ),  # 1
+    (1, TType.I32, 'userId', None, None, ),  # 1
 )
 
 
@@ -1090,10 +1089,10 @@ class createRoom_args(object):
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.members = []
-                    (_etype24, _size21) = iprot.readListBegin()
-                    for _i25 in range(_size21):
-                        _elem26 = iprot.readI32()
-                        self.members.append(_elem26)
+                    (_etype31, _size28) = iprot.readListBegin()
+                    for _i32 in range(_size28):
+                        _elem33 = iprot.readI32()
+                        self.members.append(_elem33)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1120,8 +1119,8 @@ class createRoom_args(object):
         if self.members is not None:
             oprot.writeFieldBegin('members', TType.LIST, 2)
             oprot.writeListBegin(TType.I32, len(self.members))
-            for iter27 in self.members:
-                oprot.writeI32(iter27)
+            for iter34 in self.members:
+                oprot.writeI32(iter34)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.roomInfo is not None:
@@ -1408,10 +1407,10 @@ class joinRoom_args(object):
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.members = []
-                    (_etype31, _size28) = iprot.readListBegin()
-                    for _i32 in range(_size28):
-                        _elem33 = iprot.readI32()
-                        self.members.append(_elem33)
+                    (_etype38, _size35) = iprot.readListBegin()
+                    for _i39 in range(_size35):
+                        _elem40 = iprot.readI32()
+                        self.members.append(_elem40)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1437,8 +1436,8 @@ class joinRoom_args(object):
         if self.members is not None:
             oprot.writeFieldBegin('members', TType.LIST, 2)
             oprot.writeListBegin(TType.I32, len(self.members))
-            for iter34 in self.members:
-                oprot.writeI32(iter34)
+            for iter41 in self.members:
+                oprot.writeI32(iter41)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.msg is not None:
@@ -1741,10 +1740,10 @@ class removeRoomMenbers_args(object):
             elif fid == 3:
                 if ftype == TType.LIST:
                     self.members = []
-                    (_etype38, _size35) = iprot.readListBegin()
-                    for _i39 in range(_size35):
-                        _elem40 = iprot.readI32()
-                        self.members.append(_elem40)
+                    (_etype45, _size42) = iprot.readListBegin()
+                    for _i46 in range(_size42):
+                        _elem47 = iprot.readI32()
+                        self.members.append(_elem47)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1769,8 +1768,8 @@ class removeRoomMenbers_args(object):
         if self.members is not None:
             oprot.writeFieldBegin('members', TType.LIST, 3)
             oprot.writeListBegin(TType.I32, len(self.members))
-            for iter41 in self.members:
-                oprot.writeI32(iter41)
+            for iter48 in self.members:
+                oprot.writeI32(iter48)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()

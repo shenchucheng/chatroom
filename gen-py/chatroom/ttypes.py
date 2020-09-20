@@ -25,16 +25,18 @@ class Msg(object):
      - fromUserId
      - toUserId
      - msgId
+     - saveTime
 
     """
 
 
-    def __init__(self, content=None, timestamp=None, fromUserId=None, toUserId=None, msgId=None,):
+    def __init__(self, content=None, timestamp=None, fromUserId=None, toUserId=None, msgId=None, saveTime=None,):
         self.content = content
         self.timestamp = timestamp
         self.fromUserId = fromUserId
         self.toUserId = toUserId
         self.msgId = msgId
+        self.saveTime = saveTime
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -70,6 +72,11 @@ class Msg(object):
                     self.msgId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.saveTime = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -100,6 +107,10 @@ class Msg(object):
             oprot.writeFieldBegin('msgId', TType.I64, 5)
             oprot.writeI64(self.msgId)
             oprot.writeFieldEnd()
+        if self.saveTime is not None:
+            oprot.writeFieldBegin('saveTime', TType.I32, 6)
+            oprot.writeI32(self.saveTime)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -126,16 +137,18 @@ class RMMsg(object):
      - userId
      - chatroomId
      - msgId
+     - saveTime
 
     """
 
 
-    def __init__(self, content=None, timestamp=None, userId=None, chatroomId=None, msgId=None,):
+    def __init__(self, content=None, timestamp=None, userId=None, chatroomId=None, msgId=None, saveTime=None,):
         self.content = content
         self.timestamp = timestamp
         self.userId = userId
         self.chatroomId = chatroomId
         self.msgId = msgId
+        self.saveTime = saveTime
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -171,6 +184,11 @@ class RMMsg(object):
                     self.msgId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.saveTime = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -200,6 +218,10 @@ class RMMsg(object):
         if self.msgId is not None:
             oprot.writeFieldBegin('msgId', TType.I64, 5)
             oprot.writeI64(self.msgId)
+            oprot.writeFieldEnd()
+        if self.saveTime is not None:
+            oprot.writeFieldBegin('saveTime', TType.I32, 6)
+            oprot.writeI32(self.saveTime)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -313,16 +335,18 @@ class Room(object):
      - members
      - roomOwer
      - roomInfo
+     - msgs
 
     """
 
 
-    def __init__(self, roomId=None, roomName=None, members=None, roomOwer=None, roomInfo=None,):
+    def __init__(self, roomId=None, roomName=None, members=None, roomOwer=None, roomInfo=None, msgs=None,):
         self.roomId = roomId
         self.roomName = roomName
         self.members = members
         self.roomOwer = roomOwer
         self.roomInfo = roomInfo
+        self.msgs = msgs
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -344,13 +368,13 @@ class Room(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
-                if ftype == TType.LIST:
-                    self.members = []
-                    (_etype17, _size14) = iprot.readListBegin()
+                if ftype == TType.SET:
+                    self.members = set()
+                    (_etype17, _size14) = iprot.readSetBegin()
                     for _i18 in range(_size14):
                         _elem19 = iprot.readI32()
-                        self.members.append(_elem19)
-                    iprot.readListEnd()
+                        self.members.add(_elem19)
+                    iprot.readSetEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
@@ -362,6 +386,17 @@ class Room(object):
                 if ftype == TType.STRUCT:
                     self.roomInfo = RoomInfo()
                     self.roomInfo.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.LIST:
+                    self.msgs = []
+                    (_etype23, _size20) = iprot.readListBegin()
+                    for _i24 in range(_size20):
+                        _elem25 = RMMsg()
+                        _elem25.read(iprot)
+                        self.msgs.append(_elem25)
+                    iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             else:
@@ -383,11 +418,11 @@ class Room(object):
             oprot.writeString(self.roomName.encode('utf-8') if sys.version_info[0] == 2 else self.roomName)
             oprot.writeFieldEnd()
         if self.members is not None:
-            oprot.writeFieldBegin('members', TType.LIST, 3)
-            oprot.writeListBegin(TType.I32, len(self.members))
-            for iter20 in self.members:
-                oprot.writeI32(iter20)
-            oprot.writeListEnd()
+            oprot.writeFieldBegin('members', TType.SET, 3)
+            oprot.writeSetBegin(TType.I32, len(self.members))
+            for iter26 in self.members:
+                oprot.writeI32(iter26)
+            oprot.writeSetEnd()
             oprot.writeFieldEnd()
         if self.roomOwer is not None:
             oprot.writeFieldBegin('roomOwer', TType.I32, 4)
@@ -396,6 +431,13 @@ class Room(object):
         if self.roomInfo is not None:
             oprot.writeFieldBegin('roomInfo', TType.STRUCT, 5)
             self.roomInfo.write(oprot)
+            oprot.writeFieldEnd()
+        if self.msgs is not None:
+            oprot.writeFieldBegin('msgs', TType.LIST, 6)
+            oprot.writeListBegin(TType.STRUCT, len(self.msgs))
+            for iter27 in self.msgs:
+                iter27.write(oprot)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -464,74 +506,6 @@ class RoomInfo(object):
         if self.introduce is not None:
             oprot.writeFieldBegin('introduce', TType.STRING, 2)
             oprot.writeString(self.introduce.encode('utf-8') if sys.version_info[0] == 2 else self.introduce)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
-class RequestInfo(object):
-    """
-    Attributes:
-     - id
-     - lastTimestamp
-
-    """
-
-
-    def __init__(self, id=None, lastTimestamp=None,):
-        self.id = id
-        self.lastTimestamp = lastTimestamp
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.I32:
-                    self.id = iprot.readI32()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.I32:
-                    self.lastTimestamp = iprot.readI32()
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('RequestInfo')
-        if self.id is not None:
-            oprot.writeFieldBegin('id', TType.I32, 1)
-            oprot.writeI32(self.id)
-            oprot.writeFieldEnd()
-        if self.lastTimestamp is not None:
-            oprot.writeFieldBegin('lastTimestamp', TType.I32, 2)
-            oprot.writeI32(self.lastTimestamp)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -628,6 +602,7 @@ Msg.thrift_spec = (
     (3, TType.I32, 'fromUserId', None, None, ),  # 3
     (4, TType.I32, 'toUserId', None, None, ),  # 4
     (5, TType.I64, 'msgId', None, None, ),  # 5
+    (6, TType.I32, 'saveTime', None, None, ),  # 6
 )
 all_structs.append(RMMsg)
 RMMsg.thrift_spec = (
@@ -637,6 +612,7 @@ RMMsg.thrift_spec = (
     (3, TType.I32, 'userId', None, None, ),  # 3
     (4, TType.I32, 'chatroomId', None, None, ),  # 4
     (5, TType.I64, 'msgId', None, None, ),  # 5
+    (6, TType.I32, 'saveTime', None, None, ),  # 6
 )
 all_structs.append(UniMsg)
 UniMsg.thrift_spec = (
@@ -649,21 +625,16 @@ Room.thrift_spec = (
     None,  # 0
     (1, TType.I32, 'roomId', None, None, ),  # 1
     (2, TType.STRING, 'roomName', 'UTF8', None, ),  # 2
-    (3, TType.LIST, 'members', (TType.I32, None, False), None, ),  # 3
+    (3, TType.SET, 'members', (TType.I32, None, False), None, ),  # 3
     (4, TType.I32, 'roomOwer', None, None, ),  # 4
     (5, TType.STRUCT, 'roomInfo', [RoomInfo, None], None, ),  # 5
+    (6, TType.LIST, 'msgs', (TType.STRUCT, [RMMsg, None], False), None, ),  # 6
 )
 all_structs.append(RoomInfo)
 RoomInfo.thrift_spec = (
     None,  # 0
     (1, TType.I32, 'creatTime', None, None, ),  # 1
     (2, TType.STRING, 'introduce', 'UTF8', None, ),  # 2
-)
-all_structs.append(RequestInfo)
-RequestInfo.thrift_spec = (
-    None,  # 0
-    (1, TType.I32, 'id', None, None, ),  # 1
-    (2, TType.I32, 'lastTimestamp', None, None, ),  # 2
 )
 all_structs.append(ChatroomOperationError)
 ChatroomOperationError.thrift_spec = (

@@ -51,14 +51,9 @@ class User(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
-                if ftype == TType.MAP:
-                    self.userInfo = {}
-                    (_ktype1, _vtype2, _size0) = iprot.readMapBegin()
-                    for _i4 in range(_size0):
-                        _key5 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        _val6 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.userInfo[_key5] = _val6
-                    iprot.readMapEnd()
+                if ftype == TType.STRUCT:
+                    self.userInfo = UserInfo()
+                    self.userInfo.read(iprot)
                 else:
                     iprot.skip(ftype)
             else:
@@ -80,12 +75,87 @@ class User(object):
             oprot.writeString(self.username.encode('utf-8') if sys.version_info[0] == 2 else self.username)
             oprot.writeFieldEnd()
         if self.userInfo is not None:
-            oprot.writeFieldBegin('userInfo', TType.MAP, 3)
-            oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.userInfo))
-            for kiter7, viter8 in self.userInfo.items():
-                oprot.writeString(kiter7.encode('utf-8') if sys.version_info[0] == 2 else kiter7)
-                oprot.writeString(viter8.encode('utf-8') if sys.version_info[0] == 2 else viter8)
-            oprot.writeMapEnd()
+            oprot.writeFieldBegin('userInfo', TType.STRUCT, 3)
+            self.userInfo.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class UserInfo(object):
+    """
+    Attributes:
+     - creatTime
+     - registerTime
+     - introduce
+
+    """
+
+
+    def __init__(self, creatTime=None, registerTime=None, introduce=None,):
+        self.creatTime = creatTime
+        self.registerTime = registerTime
+        self.introduce = introduce
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.creatTime = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I32:
+                    self.registerTime = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.introduce = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('UserInfo')
+        if self.creatTime is not None:
+            oprot.writeFieldBegin('creatTime', TType.I32, 1)
+            oprot.writeI32(self.creatTime)
+            oprot.writeFieldEnd()
+        if self.registerTime is not None:
+            oprot.writeFieldBegin('registerTime', TType.I32, 2)
+            oprot.writeI32(self.registerTime)
+            oprot.writeFieldEnd()
+        if self.introduce is not None:
+            oprot.writeFieldBegin('introduce', TType.STRING, 3)
+            oprot.writeString(self.introduce.encode('utf-8') if sys.version_info[0] == 2 else self.introduce)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -190,7 +260,14 @@ User.thrift_spec = (
     None,  # 0
     (1, TType.I32, 'userId', None, None, ),  # 1
     (2, TType.STRING, 'username', 'UTF8', None, ),  # 2
-    (3, TType.MAP, 'userInfo', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 3
+    (3, TType.STRUCT, 'userInfo', [UserInfo, None], None, ),  # 3
+)
+all_structs.append(UserInfo)
+UserInfo.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'creatTime', None, None, ),  # 1
+    (2, TType.I32, 'registerTime', None, None, ),  # 2
+    (3, TType.STRING, 'introduce', 'UTF8', None, ),  # 3
 )
 all_structs.append(UserOperationError)
 UserOperationError.thrift_spec = (
