@@ -21,12 +21,14 @@ from chatroom.ttypes import UniMsg, Msg, RMMsg
 from chatroom.ttypes import Room, RoomInfo
 
 from user.ttypes import UserOperationError, User, UserInfo
+from user.UserService import getUser_args, getUser_result, TMessageType, TApplicationException
 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
-
+from thrift.protocol.THeaderProtocol import THeaderProtocolFactory
+from thrift.Thrift import TType
 
 logger = logging.getLogger('chatroom')
 logger.level = logging.DEBUG
@@ -92,15 +94,6 @@ class ChatroomHandler(Chatroom.Iface):
         logger.debug('Chatroom msg lastid is {}'.format(self.__lastRMMsgId))
         return self.__lastRMMsgId
 
-    def genWelcomeMsg(self, room: Room) -> RMMsg:
-        return RMMsg(
-            content = '欢迎来到{}！'.format(room.roomName),
-            timestamp = timestamp(),
-            chatroomId = room.roomId,
-            userId = room.roomOwer,
-            msgId = self.nextRMMsgId,
-        )
-
     def __saveUser(self, user: User):
         """持久化保存User
 
@@ -121,7 +114,7 @@ class ChatroomHandler(Chatroom.Iface):
             msg.saveTime = timestamp()
             room.msgs.append(msg)
             self.__roomLastMsgTime[msg.chatroomId] = msg.saveTime
-            logger.debug('Chatroom {} recieve a msg {}'.format(roomId, msg.content))
+            logger.debug('Chatroom {} recieve a msg {} from {}'.format(roomId, msg.content, msg.clientInfo))
             return True
         logger.warning('Add mesage error')
         print(msg)
@@ -182,6 +175,15 @@ class ChatroomHandler(Chatroom.Iface):
         self.__rooms[room.roomId] = room
         self.__saveRMMsg(self.genWelcomeMsg(room))
 
+    def genWelcomeMsg(self, room: Room) -> RMMsg:
+        return RMMsg(
+            content = '欢迎来到{}！'.format(room.roomName),
+            timestamp = timestamp(),
+            chatroomId = room.roomId,
+            userId = room.roomOwer,
+            msgId = self.nextRMMsgId,
+        )
+
     def createRoom(self, roomName, roomOwer, members, roomInfo=None):
         print(roomName, roomOwer, members, roomInfo)
         print(members)
@@ -207,6 +209,7 @@ class ChatroomHandler(Chatroom.Iface):
         self.__saveUser(user)
         self.globalRoom.members.add(userId)
         logger.debug('User with id {} from {} has added'.format(userId, ip))
+        Users.append(user)
         return user
 
     def sendMsg(self, msg: Msg) -> bool:
@@ -217,16 +220,112 @@ class ChatroomHandler(Chatroom.Iface):
     
     def getMsg(self, userId) -> UniMsg:
         return self.__querryMsg(userId)
-    
+
+class MyServer(TServer.TThreadPoolServer):
+     def serveClient(self, client):
+        """Process input/output from a client for as long as possible"""
+        itrans = self.inputTransportFactory.getTransport(client)
+        iprot = self.inputProtocolFactory.getProtocol(itrans)
+
+        # for THeaderProtocol, we must use the same protocol instance for input
+        # and output so that the response is in the same dialect that the
+        # server detected the request was in.
+        if isinstance(self.inputProtocolFactory, THeaderProtocolFactory):
+            otrans = None
+            oprot = iprot
+        else:
+            otrans = self.outputTransportFactory.getTransport(client)
+            oprot = self.outputProtocolFactory.getProtocol(otrans)
+        # 修改
+        # iprot.writeStructBegin('getUser_args')
+        # iprot.writeFieldBegin('ip', TType.STRING, 1)
+        # iprot.writeString(str(client.handle.getpeername()))
+        # iprot.writeFieldEnd()
+        # iprot.writeFieldStop()
+        # iprot.writeStructEnd()
+        iprot.clientInfo = str(client.handle.getpeername())
+        try:
+            while True:
+                self.processor.process(iprot, oprot)
+        except TTransport.TTransportException:
+            pass
+        except Exception as x:
+            logger.exception(x)
+
+        itrans.close()
+        if otrans:
+            otrans.close()
+
+
+class MyProcess(Chatroom.Processor):
+    def __init__(self, handler):
+        super().__init__(handler)
+        self._processMap["getUser"] = MyProcess.process_getUser
+        self._processMap["sendRMMsg"] = MyProcess.process_sendRMMsg
+
+
+    def process_getUser(self, seqid, iprot, oprot):
+        args = getUser_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = getUser_result()
+        args.ip = iprot.clientInfo
+        try:
+            result.success = self._handler.getUser(args.ip)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("getUser", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_sendRMMsg(self, seqid, iprot, oprot):
+        from chatroom.Chatroom import sendRMMsg_args, sendRMMsg_result
+        args = sendRMMsg_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = sendRMMsg_result()
+        args.msg.clientInfo = iprot.clientInfo
+        try:
+            result.success = self._handler.sendRMMsg(args.msg)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("sendRMMsg", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
 
 if __name__ == '__main__':
+    Users = []
+    ServerHandle = []
     handler = ChatroomHandler()
-    processor = Chatroom.Processor(handler)
-    transport = TSocket.TServerSocket(host='127.0.0.1', port=9090)
+    processor = MyProcess(handler)
+    transport = TSocket.TServerSocket(host='0.0.0.0', port=9090)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+    # server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+    server = MyServer(processor, transport, tfactory, pfactory)
+    
 
     # You could do one of these for a multithreaded server
     # server = TServer.TThreadedServer(

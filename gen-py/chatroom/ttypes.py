@@ -26,17 +26,19 @@ class Msg(object):
      - toUserId
      - msgId
      - saveTime
+     - clientInfo
 
     """
 
 
-    def __init__(self, content=None, timestamp=None, fromUserId=None, toUserId=None, msgId=None, saveTime=None,):
+    def __init__(self, content=None, timestamp=None, fromUserId=None, toUserId=None, msgId=None, saveTime=None, clientInfo=None,):
         self.content = content
         self.timestamp = timestamp
         self.fromUserId = fromUserId
         self.toUserId = toUserId
         self.msgId = msgId
         self.saveTime = saveTime
+        self.clientInfo = clientInfo
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -77,6 +79,11 @@ class Msg(object):
                     self.saveTime = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.clientInfo = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -111,6 +118,10 @@ class Msg(object):
             oprot.writeFieldBegin('saveTime', TType.I32, 6)
             oprot.writeI32(self.saveTime)
             oprot.writeFieldEnd()
+        if self.clientInfo is not None:
+            oprot.writeFieldBegin('clientInfo', TType.STRING, 7)
+            oprot.writeString(self.clientInfo.encode('utf-8') if sys.version_info[0] == 2 else self.clientInfo)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -138,17 +149,19 @@ class RMMsg(object):
      - chatroomId
      - msgId
      - saveTime
+     - clientInfo
 
     """
 
 
-    def __init__(self, content=None, timestamp=None, userId=None, chatroomId=None, msgId=None, saveTime=None,):
+    def __init__(self, content=None, timestamp=None, userId=None, chatroomId=None, msgId=None, saveTime=None, clientInfo=None,):
         self.content = content
         self.timestamp = timestamp
         self.userId = userId
         self.chatroomId = chatroomId
         self.msgId = msgId
         self.saveTime = saveTime
+        self.clientInfo = clientInfo
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -189,6 +202,11 @@ class RMMsg(object):
                     self.saveTime = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.clientInfo = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -222,6 +240,10 @@ class RMMsg(object):
         if self.saveTime is not None:
             oprot.writeFieldBegin('saveTime', TType.I32, 6)
             oprot.writeI32(self.saveTime)
+            oprot.writeFieldEnd()
+        if self.clientInfo is not None:
+            oprot.writeFieldBegin('clientInfo', TType.STRING, 7)
+            oprot.writeString(self.clientInfo.encode('utf-8') if sys.version_info[0] == 2 else self.clientInfo)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -603,6 +625,7 @@ Msg.thrift_spec = (
     (4, TType.I32, 'toUserId', None, None, ),  # 4
     (5, TType.I64, 'msgId', None, None, ),  # 5
     (6, TType.I32, 'saveTime', None, None, ),  # 6
+    (7, TType.STRING, 'clientInfo', 'UTF8', None, ),  # 7
 )
 all_structs.append(RMMsg)
 RMMsg.thrift_spec = (
@@ -613,6 +636,7 @@ RMMsg.thrift_spec = (
     (4, TType.I32, 'chatroomId', None, None, ),  # 4
     (5, TType.I64, 'msgId', None, None, ),  # 5
     (6, TType.I32, 'saveTime', None, None, ),  # 6
+    (7, TType.STRING, 'clientInfo', 'UTF8', None, ),  # 7
 )
 all_structs.append(UniMsg)
 UniMsg.thrift_spec = (

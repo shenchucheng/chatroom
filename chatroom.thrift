@@ -24,7 +24,8 @@ struct Msg {
     3:iUserId fromUserId,
     4:iUserId toUserId,
     5:iMsg msgId,
-    6:iTime saveTime
+    6:iTime saveTime,
+    7:optional string clientInfo
 }
 
 // 群聊消息
@@ -34,7 +35,8 @@ struct RMMsg {
     3:iUserId userId,
     4:iRoomId chatroomId,
     5:iRMMsg msgId,
-    6:iTime saveTime 
+    6:iTime saveTime,
+    7:optional string clientInfo
 }
 
 // 轮询返回消息

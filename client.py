@@ -27,7 +27,10 @@ from thrift.protocol import TBinaryProtocol
 
 from server import timestamp
 
-Client.getMsg
+
+# class ServerUser()
+
+
 class ChatroomClient(Client):
     def __init__(self, iport, oport=None):
         super().__init__(iport, oprot=oport)
@@ -55,10 +58,10 @@ def timeFormat(timestamp):
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))
 
 # Make socket
-transport = TSocket.TSocket('localhost', 9090)
+transport0 = TSocket.TSocket('127.0.0.1', 9090)
 
 # Buffering is critical. Raw sockets are very slow
-transport = TTransport.TBufferedTransport(transport)
+transport = TTransport.TBufferedTransport(transport0)
 
 # Wrap in a protocol
 protocol = TBinaryProtocol.TBinaryProtocol(transport)
@@ -68,7 +71,7 @@ client = ChatroomClient(protocol)
 ip = socket.gethostbyname(socket.gethostname())
 # Connect!
 transport.open()
-client.getUser(ip)
+client.getUser('')
 # Close!
 # transport.close()
 

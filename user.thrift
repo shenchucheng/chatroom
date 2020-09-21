@@ -13,7 +13,7 @@ typedef i32 iTime
 struct User {
     1: i32 userId,
     2: optional string username,
-    3: optional UserInfo userInfo
+    3: optional UserInfo userInfo,
 }
 
 struct UserInfo {
@@ -30,7 +30,7 @@ exception UserOperationError {
 
 service UserService {
     //  游客身份连接时，获取User唯一标识符
-    User getUser(1:string ip),
+    User getUser(1:optional string ip),
 
     //  注册用户
     User userRegister(
