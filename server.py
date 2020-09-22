@@ -221,9 +221,46 @@ class ChatroomHandler(Chatroom.Iface):
     def getMsg(self, userId) -> UniMsg:
         return self.__querryMsg(userId)
 
-class MyServer(TServer.TThreadPoolServer):
-     def serveClient(self, client):
-        """Process input/output from a client for as long as possible"""
+
+# class MyServer(TServer.TThreadPoolServer):
+#      def serveClient(self, client):
+#         """Process input/output from a client for as long as possible"""
+#         itrans = self.inputTransportFactory.getTransport(client)
+#         iprot = self.inputProtocolFactory.getProtocol(itrans)
+
+#         # for THeaderProtocol, we must use the same protocol instance for input
+#         # and output so that the response is in the same dialect that the
+#         # server detected the request was in.
+#         if isinstance(self.inputProtocolFactory, THeaderProtocolFactory):
+#             otrans = None
+#             oprot = iprot
+#         else:
+#             otrans = self.outputTransportFactory.getTransport(client)
+#             oprot = self.outputProtocolFactory.getProtocol(otrans)
+#         # 修改
+#         # iprot.writeStructBegin('getUser_args')
+#         # iprot.writeFieldBegin('ip', TType.STRING, 1)
+#         # iprot.writeString(str(client.handle.getpeername()))
+#         # iprot.writeFieldEnd()
+#         # iprot.writeFieldStop()
+#         # iprot.writeStructEnd()
+#         iprot.clientInfo = str(client.handle.getpeername())
+#         logger.warning(iprot.clientInfo)
+#         try:
+#             while True:
+#                 self.processor.process(iprot, oprot)
+#         except TTransport.TTransportException:
+#             pass
+#         except Exception as x:
+#             logger.exception(x)
+
+#         itrans.close()
+#         if otrans:
+#             otrans.close()
+
+
+class MyServer(TServer.TThreadedServer):
+    def handle(self, client):
         itrans = self.inputTransportFactory.getTransport(client)
         iprot = self.inputProtocolFactory.getProtocol(itrans)
 
@@ -236,18 +273,13 @@ class MyServer(TServer.TThreadPoolServer):
         else:
             otrans = self.outputTransportFactory.getTransport(client)
             oprot = self.outputProtocolFactory.getProtocol(otrans)
-        # 修改
-        # iprot.writeStructBegin('getUser_args')
-        # iprot.writeFieldBegin('ip', TType.STRING, 1)
-        # iprot.writeString(str(client.handle.getpeername()))
-        # iprot.writeFieldEnd()
-        # iprot.writeFieldStop()
-        # iprot.writeStructEnd()
         iprot.clientInfo = str(client.handle.getpeername())
+        print(iprot.clientInfo)
         try:
             while True:
                 self.processor.process(iprot, oprot)
         except TTransport.TTransportException:
+            print('离线')
             pass
         except Exception as x:
             logger.exception(x)
@@ -255,7 +287,6 @@ class MyServer(TServer.TThreadPoolServer):
         itrans.close()
         if otrans:
             otrans.close()
-
 
 class MyProcess(Chatroom.Processor):
     def __init__(self, handler):
@@ -316,6 +347,7 @@ class MyProcess(Chatroom.Processor):
 
 if __name__ == '__main__':
     Users = []
+    Request = []
     ServerHandle = []
     handler = ChatroomHandler()
     processor = MyProcess(handler)

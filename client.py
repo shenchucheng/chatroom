@@ -83,6 +83,7 @@ def test():
             # print(msgs)
             continue
         for i in msgs.room:
+            print(i)
             print('User', i.userId,  timeFormat(i.timestamp))
             print(i.content)
         
